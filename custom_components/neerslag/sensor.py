@@ -211,7 +211,7 @@ class NeerslagSensorBuienalarm(mijnBasis):
         self._enabled = enabled
         config_entry.add_update_listener(self.mine_update_listener)
 
-        if config_entry.data.get("NeerslagSensorUseHAforLocation") == True:
+        if config_entry.data.get("NeerslagSensorUseHAforLocation"):
             self._lat = hass.config.latitude
             self._lon = hass.config.longitude
         else:
@@ -239,10 +239,10 @@ class NeerslagSensorBuienalarm(mijnBasis):
     async def async_update(self):
         if self._enabled:
             self._state = random()
-            self._attrs = await self.getBuienalarmData()
+            self._attrs = await self.get_buienalarm_data()
         return True
 
-    async def getBuienalarmData(self) -> Dict:
+    async def get_buienalarm_data(self) -> Dict:
         data = {"data": {"delta": 300, "precip": []}}
         # return data
         try:
@@ -274,10 +274,9 @@ class NeerslagSensorBuienradar(mijnBasis):
         self._enabled = enabled
         config_entry.add_update_listener(self.mine_update_listener)
 
-        if config_entry.data.get("NeerslagSensorUseHAforLocation") == True:
+        if config_entry.data.get("NeerslagSensorUseHAforLocation"):
             self._lat = hass.config.latitude
             self._lon = hass.config.longitude
-
         else:
             self._lat = config_entry.data.get("buienradarLatitude")
             self._lon = config_entry.data.get("buienradarLongitude")
@@ -303,10 +302,10 @@ class NeerslagSensorBuienradar(mijnBasis):
     async def async_update(self):
         if self._enabled:
             self._state = random()
-            self._attrs = await self.getBuienradarData()
+            self._attrs = await self.get_buienradar_data()
         return True
 
-    async def getBuienradarData(self) -> Dict:
+    async def get_buienradar_data(self) -> Dict:
         data = {"data": ""}
         # return data
         try:
