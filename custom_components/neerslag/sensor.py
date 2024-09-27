@@ -1,26 +1,15 @@
-from homeassistant.block_async_io import enable
-from homeassistant.helpers.entity_platform import EntityPlatform
+from typing import Dict
+
 import logging
-from os import truncate
 import aiohttp
 
 from random import random
 import random as rand
 
-import json
 from homeassistant.helpers.entity import Entity
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME, CONF_SOURCE
 from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import EntityPlatform, async_get_platforms
-
-
-from homeassistant.helpers.entity_registry import (
-    async_entries_for_config_entry,
-    async_entries_for_device,
-)
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,16 +55,16 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     # _LOGGER.info(cc)
     # _LOGGER.info("<<<dd<<<<<<<<<<<<<<<<----------->>>")
 
-   # ent_reg = hass.helpers.entity_registry.async_get_registry()
-   # aaa = ent_reg.async_get_entity_id("neerslag", "sensor", self._unique_id)
+    # ent_reg = hass.helpers.entity_registry.async_get_registry()
+    # aaa = ent_reg.async_get_entity_id("neerslag", "sensor", self._unique_id)
 
-   # _LOGGER.info(aaa)
+    # _LOGGER.info(aaa)
 
-   # _LOGGER.info(config_entry.entry_id)
-   # _LOGGER.info(config_entry.unique_id)
+    # _LOGGER.info(config_entry.entry_id)
+    # _LOGGER.info(config_entry.unique_id)
 
-   # rr = await config_entry.ConfigEntries.async_reload(config_entry.entry_id)
-   # _LOGGER.info(rr)
+    # rr = await config_entry.ConfigEntries.async_reload(config_entry.entry_id)
+    # _LOGGER.info(rr)
 
     # async_add_entities([DummyABC(hass, config_entry)], update_before_add=True)
     # async_add_entities([DummyABC(hass, config_entry)], update_before_add=True)
@@ -134,17 +123,17 @@ class mijnBasis(Entity):
         # if(self._name == "neerslag_DummyDEF"):
         #     self._enabled = config_entry.data.get("buienradar")
 
-        if(self._name == "neerslag_buienalarm_regen_data"):
+        if self._name == "neerslag_buienalarm_regen_data":
             self._enabled = config_entry.data.get("buienalarm")
 
-        if(self._name == "neerslag_buienradar_regen_data"):
+        if self._name == "neerslag_buienradar_regen_data":
             self._enabled = config_entry.data.get("buienradar")
 
-      # self._enabled = config_entry.data.get(enabled)
-      # await hass.config_entries.async_remove(config_entry.entry_id)
-      # rr = hass.config_entries.async_entries(DOMAIN)
-      # hass.config_entries.async_update_entry(config_entry, data=config_entry.options)
-      # await hass.config_entries.async_reload(config_entry.entry_id)
+    # self._enabled = config_entry.data.get(enabled)
+    # await hass.config_entries.async_remove(config_entry.entry_id)
+    # rr = hass.config_entries.async_entries(DOMAIN)
+    # hass.config_entries.async_update_entry(config_entry, data=config_entry.options)
+    # await hass.config_entries.async_reload(config_entry.entry_id)
 
     @property
     def device_info(self):
@@ -165,15 +154,15 @@ class mijnBasis(Entity):
         """Return True if entity is available."""
         return self._enabled
 
-    @ property
+    @property
     def state(self):
         return self._state
 
-    @ property
+    @property
     def name(self):
         return self._name
 
-    @ property
+    @property
     def unique_id(self):
         """Return unique ID."""
         return self._unique_id
@@ -216,7 +205,7 @@ class NeerslagSensorBuienalarm(mijnBasis):
         super().__init__(hass=hass, config_entry=config_entry, enabled=enabled)
         self._name = "neerslag_buienalarm_regen_data"
         self._state = "working"  # None
-        self._attrs = ["data empty"]
+        self._attrs = {"data": {"delta": 300, "precip": []}}
         self._unique_id = "neerslag-sensor-buienalarm-1"
 
         self._enabled = enabled
@@ -225,7 +214,6 @@ class NeerslagSensorBuienalarm(mijnBasis):
         if config_entry.data.get("NeerslagSensorUseHAforLocation") == True:
             self._lat = hass.config.latitude
             self._lon = hass.config.longitude
-
         else:
             self._lat = config_entry.data.get("buienalarmLatitude")
             self._lon = config_entry.data.get("buienalarmLongitude")
@@ -237,11 +225,11 @@ class NeerslagSensorBuienalarm(mijnBasis):
         # self._entity_picture = "https://www.buienalarm.nl/assets/img/social.png"
         self._icon = "mdi:weather-cloudy"
 
-    @ property
+    @property
     def icon(self):
         return self._icon
 
-    @ property
+    @property
     def state_attributes(self):
         if not len(self._attrs):
             return
@@ -249,24 +237,22 @@ class NeerslagSensorBuienalarm(mijnBasis):
         # return {"data": self._attrs}
 
     async def async_update(self):
-        if(self._enabled == True):
+        if self._enabled:
             self._state = random()
             self._attrs = await self.getBuienalarmData()
         return True
 
-    async def getBuienalarmData(self) -> str:
-        data = json.loads('{"data":""}')
+    async def getBuienalarmData(self) -> Dict:
+        data = {"data": {"delta": 300, "precip": []}}
         # return data
         try:
             timeout = aiohttp.ClientTimeout(total=5)
             async with aiohttp.ClientSession() as session:
-                url = 'https://cdn-secure.buienalarm.nl/api/3.4/forecast.php?lat=' + self._lat + '&lon=' + self._lon + '&region=nl&c=' + str(rand.randint(0, 999999999999999))
+                url = 'https://cdn-secure.buienalarm.nl/api/3.4/forecast.php?lat=' + self._lat + '&lon=' + self._lon + '&region=nl&c=' + str(
+                    rand.randint(0, 999999999999999))
                 async with session.get(url, timeout=timeout) as response:
-                    html = await response.text()
-                    dataRequest = html.replace('\r\n', ' ')
-                    if dataRequest == "" :
-                        dataRequest = ""
-                    data = json.loads('{"data":' + dataRequest + '}')
+                    result = await response.json()
+                    data = {"data": result}
                     # _LOGGER.info(data)
                     await session.close()
         except:
@@ -282,7 +268,7 @@ class NeerslagSensorBuienradar(mijnBasis):
 
         self._name = "neerslag_buienradar_regen_data"
         self._state = "working"  # None
-        self._attrs = ["data empty"]
+        self._attrs = {"data": ""}
         self._unique_id = "neerslag-sensor-buienradar-1"
 
         self._enabled = enabled
@@ -303,38 +289,37 @@ class NeerslagSensorBuienradar(mijnBasis):
         # self._entity_picture = "https://cdn.buienradar.nl/resources/images/br-logo-square.png"
         self._icon = "mdi:weather-cloudy"
 
-    @ property
+    @property
     def icon(self):
         return self._icon
 
-    @ property
+    @property
     def state_attributes(self):
-        if not len(self._attrs):
+        if not len(self._attrs["data"]):
             return
         return self._attrs
         # return {"data": self._attrs}
 
     async def async_update(self):
-        if(self._enabled == True):
+        if self._enabled:
             self._state = random()
             self._attrs = await self.getBuienradarData()
         return True
 
-    async def getBuienradarData(self) -> str:
-        data = json.loads('{"data":""}')
+    async def getBuienradarData(self) -> Dict:
+        data = {"data": ""}
         # return data
         try:
             timeout = aiohttp.ClientTimeout(total=5)
             async with aiohttp.ClientSession() as session:
                 # https://www.buienradar.nl/overbuienradar/gratis-weerdata
-                url = 'https://gps.buienradar.nl/getrr.php?lat=' + self._lat + '&lon=' + self._lon + '&c=' + str(rand.randint(0, 999999999999999))
+                url = 'https://gps.buienradar.nl/getrr.php?lat=' + self._lat + '&lon=' + self._lon + '&c=' + str(
+                    rand.randint(0, 999999999999999))
                 # _LOGGER.info(url)
                 async with session.get(url, timeout=timeout) as response:
                     html = await response.text()
                     dataRequest = ' '.join(html.splitlines())
-                    if dataRequest == "" :
-                        dataRequest = ""
-                    data = json.loads('{"data": "' + dataRequest + '"}')
+                    data = {"data": dataRequest.strip()}
                     # _LOGGER.info(data)
                     await session.close()
         except:
