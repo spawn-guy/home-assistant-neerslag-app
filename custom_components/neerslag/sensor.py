@@ -248,9 +248,14 @@ class NeerslagSensorBuienalarm(mijnBasis):
         try:
             timeout = aiohttp.ClientTimeout(total=5)
             async with aiohttp.ClientSession() as session:
-                url = 'https://cdn-secure.buienalarm.nl/api/3.4/forecast.php?lat=' + self._lat + '&lon=' + self._lon + '&region=nl&c=' + str(
-                    rand.randint(0, 999999999999999))
-                async with session.get(url, timeout=timeout) as response:
+                _params = {
+                    "lat": self._lat,
+                    "lon": self._lon,
+                    "region": "nl",
+                    "c": str(rand.randint(0, 999999999999999))
+                }
+                async with session.get("https://cdn-secure.buienalarm.nl/api/3.4/forecast.php", params=_params,
+                                       timeout=timeout) as response:
                     result = await response.json()
                     data = {"data": result}
                     # _LOGGER.info(data)
@@ -312,10 +317,13 @@ class NeerslagSensorBuienradar(mijnBasis):
             timeout = aiohttp.ClientTimeout(total=5)
             async with aiohttp.ClientSession() as session:
                 # https://www.buienradar.nl/overbuienradar/gratis-weerdata
-                url = 'https://gps.buienradar.nl/getrr.php?lat=' + self._lat + '&lon=' + self._lon + '&c=' + str(
-                    rand.randint(0, 999999999999999))
-                # _LOGGER.info(url)
-                async with session.get(url, timeout=timeout) as response:
+                _params = {
+                    "lat": self._lat,
+                    "lon": self._lon,
+                    "c": str(rand.randint(0, 999999999999999))
+                }
+                async with session.get("https://gps.buienradar.nl/getrr.php", params=_params,
+                                       timeout=timeout) as response:
                     html = await response.text()
                     dataRequest = ' '.join(html.splitlines())
                     data = {"data": dataRequest.strip()}
