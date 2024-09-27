@@ -254,7 +254,7 @@ class NeerslagSensorBuienalarm(mijnBasis):
                     result = await response.json()
                     data = {"data": result}
                     # _LOGGER.info(data)
-                    await session.close()
+                await session.close()
         except:
             _LOGGER.info("getBuienalarmData - timeout")
             pass
@@ -321,7 +321,7 @@ class NeerslagSensorBuienradar(mijnBasis):
                     dataRequest = ' '.join(html.splitlines())
                     data = {"data": dataRequest.strip()}
                     # _LOGGER.info(data)
-                    await session.close()
+                await session.close()
         except:
             _LOGGER.info("getBuienradarData - timeout")
             pass
